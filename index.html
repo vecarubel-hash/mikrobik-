@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Мікробик 4-А: Весела Школа</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Мікробик 4-А: Весела Пригода</title>
     <style>
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; background: #FFFAF0; 
-            position: fixed; font-family: 'Comic Sans MS', cursive, sans-serif; 
+            overflow: hidden; background: #E0F7FA; 
+            position: fixed; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             touch-action: none;
         }
         canvas { display: block; }
@@ -16,60 +17,53 @@
         .ui-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: rgba(255, 255, 255, 0.8); z-index: 1000;
+            background: rgba(255, 255, 255, 0.9); z-index: 1000;
         }
         
-        .title { font-size: 45px; color: #FF4500; text-shadow: 4px 4px #FFD700; margin-bottom: 20px; text-align: center; }
+        .title { font-size: 36px; color: #FF4500; text-shadow: 2px 2px #FFD700; margin-bottom: 20px; text-align: center; padding: 10px; }
         
         .btn-start {
-            padding: 25px 60px; font-size: 35px; background: #FF69B4;
-            color: white; border: none; border-radius: 30px;
-            box-shadow: 0 10px #C71585; cursor: pointer; animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            padding: 20px 50px; font-size: 28px; background: #4CAF50;
+            color: white; border: none; border-radius: 25px;
+            box-shadow: 0 8px #2E7D32; cursor: pointer;
         }
 
         #joy-bg { 
-            position: absolute; bottom: 60px; left: 60px; 
-            width: 140px; height: 140px; background: rgba(0,0,0,0.1); 
-            border-radius: 50%; border: 4px solid rgba(0,0,0,0.2);
+            position: absolute; bottom: 50px; left: 50px; 
+            width: 120px; height: 120px; background: rgba(0,0,0,0.1); 
+            border-radius: 50%; border: 3px solid rgba(0,0,0,0.2);
             touch-action: none; z-index: 100; display: none;
         }
         #joy-stick { 
-            position: absolute; top: 40px; left: 40px; 
-            width: 60px; height: 60px; background: #00FF7F; 
-            border-radius: 50%; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: absolute; top: 35px; left: 35px; 
+            width: 50px; height: 50px; background: #00E676; 
+            border-radius: 50%; border: 3px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
         .stats-top {
-            position: absolute; top: 15px; left: 15px; background: white;
-            padding: 10px 20px; border-radius: 20px; border: 3px solid #FF69B4;
-            font-size: 20px; z-index: 50;
+            position: absolute; top: 10px; left: 10px; background: white;
+            padding: 8px 15px; border-radius: 15px; border: 2px solid #FF69B4;
+            font-size: 18px; z-index: 50; font-weight: bold;
         }
     </style>
 </head>
 <body>
 
     <div id="menu" class="ui-screen">
-        <div class="title">🦠 МІКРОБИК 4-А <br> В ПОШУКАХ ДРУЗІВ</div>
-        <div style="font-size: 22px; margin-bottom: 20px; text-align: center;">
-            🍔 Збирай смаколики <br>
-            📚 Читай підручники <br>
-            🐱 Знаходь друзів і тваринок!
+        <div class="title">🦠 МІКРОБИК 4-А</div>
+        <div style="font-size: 18px; margin-bottom: 20px; text-align: center; color: #333;">
+            🍔 Їж смаколики <br>
+            📚 Збирай знання <br>
+            🐶 Шукай друзів!
         </div>
-        <button class="btn-start" onclick="startGame()">ПОЇХАЛИ!</button>
+        <button class="btn-start" onclick="startGame()">ПОЧАТИ ГРУ</button>
     </div>
 
     <div id="stats" class="stats-top" style="display: none;">
-        ⚡ Енергія: <span id="energy-val">100</span>% | ⭐ Рахунок: <span id="score-val">0</span>
+        ⚡ Енергія: <span id="energy-val">100</span>% | ⭐ Бали: <span id="score-val">0</span>
     </div>
 
     <canvas id="game"></canvas>
-    
     <div id="joy-bg"><div id="joy-stick"></div></div>
 
     <script>
@@ -82,11 +76,10 @@
 
         let width, height, gameState = "menu";
         
-        // Категорії предметів
-        const foodList = ['🍬', '🍭', '🍔', '🍕', '🍎', '🍩', '🍦'];
-        const bookList = ['📚', '📖', '📒', '📝'];
-        const friendList = ['👦', '👧', '🐱', '🐶', '🐼', '🦁', '🐨', '🐯'];
-        const virusList = ['👾', '🦠', '🚫'];
+        const foodList = ['🍬', '🍔', '🍕', '🍎', '🍦'];
+        const bookList = ['📚', '📖'];
+        const friendList = ['👦', '👧', '🐱', '🐶', '🐼'];
+        const virusList = ['👾', '🦠'];
 
         function resize() {
             width = canvas.width = window.innerWidth;
@@ -95,8 +88,8 @@
         window.addEventListener('resize', resize);
         resize();
 
-        const player = { x: 0, y: 0, size: 38, vx: 0, vy: 0, energy: 100, score: 0 };
-
+        // Швидкість гравця (vx, vy) тепер ділиться на 12 для повільного руху
+        const player = { x: 0, y: 0, size: 35, vx: 0, vy: 0, energy: 100, score: 0 };
         let items = [];
 
         function startGame() {
@@ -111,8 +104,8 @@
             items = [];
         }
 
-        // Джойстик
-        const maxDist = 50;
+        // КЕРУВАННЯ (Зменшена чутливість для 4 класу)
+        const maxDist = 45;
         function updateJoystick(e) {
             e.preventDefault();
             const touch = e.touches ? e.touches[0] : e;
@@ -124,8 +117,10 @@
             const dist = Math.sqrt(dx*dx + dy*dy);
             if (dist > maxDist) { dx *= maxDist / dist; dy *= maxDist / dist; }
             joyStick.style.transform = `translate(${dx}px, ${dy}px)`;
-            player.vx = dx / 6;
-            player.vy = dy / 6;
+            
+            // ПОВІЛЬНИЙ РУХ (ділимо на 12)
+            player.vx = dx / 12;
+            player.vy = dy / 12;
         }
 
         joyBg.addEventListener('touchstart', updateJoystick);
@@ -136,12 +131,11 @@
         });
 
         function spawn() {
-            if (items.length < 10) {
+            if (items.length < 8) {
                 const rand = Math.random();
                 let category, list;
-                
-                if (rand < 0.4) { category = 'food'; list = foodList; }
-                else if (rand < 0.7) { category = 'book'; list = bookList; }
+                if (rand < 0.5) { category = 'food'; list = foodList; }
+                else if (rand < 0.75) { category = 'book'; list = bookList; }
                 else if (rand < 0.9) { category = 'friend'; list = friendList; }
                 else { category = 'virus'; list = virusList; }
 
@@ -150,9 +144,9 @@
                     emoji: list[Math.floor(Math.random() * list.length)],
                     x: Math.random() * (width - 60) + 30,
                     y: Math.random() * (height - 60) + 30,
-                    size: 30,
+                    size: 28,
                     angle: Math.random() * Math.PI * 2,
-                    speed: category === 'virus' ? 2 : 0
+                    speed: category === 'virus' ? 0.8 : 0 // Віруси стали повільними
                 });
             }
         }
@@ -162,86 +156,82 @@
 
             player.x += player.vx;
             player.y += player.vy;
+            
+            // Кордони екрану
             if (player.x < player.size) player.x = player.size;
             if (player.x > width - player.size) player.x = width - player.size;
             if (player.y < player.size) player.y = player.size;
             if (player.y > height - player.size) player.y = height - player.size;
 
-            player.energy -= 0.04;
-            document.getElementById('energy-val').innerText = Math.floor(player.energy);
+            // ПОВІЛЬНЕ витрачання енергії
+            player.energy -= 0.025; 
+            document.getElementById('energy-val').innerText = Math.max(0, Math.floor(player.energy));
             document.getElementById('score-val').innerText = player.score;
 
             items.forEach((item, index) => {
                 if (item.type === 'virus') {
                     item.x += Math.cos(item.angle) * item.speed;
                     item.y += Math.sin(item.angle) * item.speed;
-                    if (item.x < 0 || item.x > width || item.y < 0 || item.y > height) item.angle += Math.PI;
+                    if (item.x < 10 || item.x > width - 10 || item.y < 10 || item.y > height - 10) item.angle += Math.PI;
                 }
 
                 const d = Math.hypot(player.x - item.x, player.y - item.y);
-                if (d < player.size + item.size) {
-                    if (item.type === 'food') { player.energy = Math.min(100, player.energy + 15); player.score += 5; }
+                if (d < player.size + 20) {
+                    if (item.type === 'food') { player.energy = Math.min(100, player.energy + 15); player.score += 10; }
                     else if (item.type === 'book') { player.score += 50; }
-                    else if (item.type === 'friend') { player.score += 100; player.energy = Math.min(100, player.energy + 5); }
-                    else if (item.type === 'virus') { player.energy -= 30; }
+                    else if (item.type === 'friend') { player.score += 100; player.energy = Math.min(100, player.energy + 10); }
+                    else if (item.type === 'virus') { player.energy -= 25; }
                     items.splice(index, 1);
                 }
             });
 
             if (player.energy <= 0) {
-                alert("Ой! Потрібно підкріпитися 🍎. Твій результат: " + player.score);
                 gameState = "menu";
                 menu.style.display = "flex";
                 stats.style.display = "none";
                 joyBg.style.display = "none";
+                alert("Енергія 0! Твій результат: " + player.score);
             }
             spawn();
         }
 
         function draw() {
-            // Фон з травою
-            ctx.fillStyle = "#F0FFF0";
+            // Світлий фон
+            ctx.fillStyle = "#E1F5FE";
             ctx.fillRect(0, 0, width, height);
-            
-            // Малюємо квіточки на фоні
-            ctx.font = "20px Arial";
-            for(let i=0; i<width; i+=100) {
-                for(let j=0; j<height; j+=100) {
-                    ctx.fillText("🌸", i + (j%20), j + (i%20));
-                }
-            }
 
             if (gameState === "playing") {
+                // Виправляємо відображення Емодзі для iPhone
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.font = "40px 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif";
+
                 items.forEach(item => {
-                    ctx.font = "45px Arial";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    // Ефект гойдання
-                    const wobble = Math.sin(Date.now() * 0.005 + item.x) * 5;
+                    const wobble = Math.sin(Date.now() * 0.003 + item.x) * 4;
                     ctx.fillText(item.emoji, item.x, item.y + wobble);
                 });
 
                 // Малюємо Мікробика
-                const time = Date.now() * 0.006;
+                const time = Date.now() * 0.005;
                 const pSize = player.size + Math.sin(time) * 2;
                 
-                ctx.fillStyle = "#32CD32";
+                ctx.fillStyle = "#4CAF50";
                 ctx.beginPath();
                 ctx.arc(player.x, player.y, pSize, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.strokeStyle = "white"; ctx.lineWidth = 4; ctx.stroke();
 
-                // Очі
+                // Очі мікробика
                 ctx.fillStyle = "white";
                 ctx.beginPath(); ctx.arc(player.x-12, player.y-8, 9, 0, Math.PI*2); ctx.fill();
                 ctx.beginPath(); ctx.arc(player.x+12, player.y-8, 9, 0, Math.PI*2); ctx.fill();
                 ctx.fillStyle = "black";
-                ctx.beginPath(); ctx.arc(player.x-12 + player.vx, player.y-8 + player.vy, 4, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(player.x+12 + player.vx, player.y-8 + player.vy, 4, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(player.x-12 + (player.vx*2), player.y-8 + (player.vy*2), 4, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(player.x+12 + (player.vx*2), player.y-8 + (player.vy*2), 4, 0, Math.PI*2); ctx.fill();
                 
                 // Рот
                 ctx.strokeStyle = "black"; ctx.lineWidth = 3; ctx.beginPath();
-                ctx.arc(player.x, player.y + 8, 10, 0, Math.PI, false); ctx.stroke();
+                ctx.arc(player.x, player.y + 10, 8, 0.2, Math.PI-0.2, false); ctx.stroke();
             }
 
             update();
