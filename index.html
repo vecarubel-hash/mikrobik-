@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Мікробик 4-А</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; position: fixed; font-family: sans-serif; }
+        canvas { display: block; background: #f0f8ff; }
+        #joy-bg { 
+            position: absolute; bottom: 50px; left: 50px; 
+            width: 100px; height: 100px; background: rgba(0,0,0,0.1); 
+            border-radius: 50%; border: 2px solid rgba(0,0,0,0.2);
+            touch-action: none; z-index: 10;
+        }
+        #joy-stick { 
+            position: absolute; top: 25px; left: 25px; 
+            width: 50px; height: 50px; background: #00c800; 
+            border-radius: 50%; border: 3px solid white; pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="game"></canvas>
+    <div id="joy-bg"><div id="joy-stick"></div></div>
+
+    <script>
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d');
+        const joyBg = document.getElementById('joy-bg');
+        const joyStick = document.getElementById('joy-stick');
+
+        let width, height;
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const player = { x: width/2, y: height/2, size: 20, vx: 0, vy: 0, energy: 100, score: 0 };
+        const items = [];
+        const foodColor = "#ffa500";
+
+        // Керування
+        const maxDist = 40;
+        function handleMove(e) {
+            e.preventDefault();
+            const touch = e.touches ? e.touches[0] : e;
+            const rect = joyBg.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            let dx = touch.clientX - centerX;
+            let dy = touch.clientY - centerY;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            if (dist > maxDist) {
+                dx *= maxDist / dist;
+                dy *= maxDist / dist;
+            }
+
+            joyStick.style.transform = `translate(${dx}px, ${dy}px)`;
+            player.vx = dx / 8;
+            player.vy = dy / 8;
+        }
+
+        joyBg.addEventListener('touchstart', handleMove);
+        joyBg.addEventListener('touchmove', handleMove);
+        joyBg.addEventListener('touchend', () => {
+            joyStick.style.transform = `translate(0px, 0px)`;
+            player.vx = 0; player.vy = 0;
+        });
+
+        function spawn() {
+            if (items.length < 7) {
+                items.push({ x: Math.random() * (width-40) + 20, y: Math.random() * (height-40) + 20, size: 12 });
+            }
+        }
+
+        function update() {
+            player.x += player.vx;
+            player.y += player.vy;
+            
+            if (player.x < player.size) player.x = player.size;
+            if (player.x > width - player.size) player.x = width - player.size;
+            if (player.y < player.size) player.y = player.size;
+            if (player.y > height - player.size) player.y = height - player.size;
+
+            player.energy -= 0.05;
+
+            items.forEach((item, index) => {
+                const d = Math.hypot(player.x - item.x, player.y - item.y);
+                if (d < player.size + item.size) {
+                    items.splice(index, 1);
+                    player.energy = Math.min(100, player.energy + 10);
+                    player.score += 10;
+                }
+            });
+
+            if (player.energy <= 0) {
+                alert("Енергія закінчилась! Твій рахунок: " + player.score);
+                player.energy = 100;
+                player.score = 0;
+                player.x = width/2; player.y = height/2;
+            }
+            spawn();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Їжа
+            items.forEach(item => {
+                ctx.fillStyle = foodColor;
+                ctx.beginPath();
+                ctx.arc(item.x, item.y, item.size, 0, Math.PI*2);
+                ctx.fill();
+            });
+
+            // Мікробик (з пульсацією)
+            const pulse = 1 + Math.sin(Date.now() * 0.01) * 0.05;
+            ctx.fillStyle = `hsl(${player.energy * 1.2}, 70%, 45%)`;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size * pulse, 0, Math.PI*2);
+            ctx.fill();
+
+            // Очі
+            ctx.fillStyle = "white";
+            ctx.beginPath(); ctx.arc(player.x-7, player.y-5, 5, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(player.x+7, player.y-5, 5, 0, Math.PI*2); ctx.fill();
+
+            // Інтерфейс
+            ctx.fillStyle = "#333";
+            ctx.font = "bold 18px sans-serif";
+            ctx.fillText(`⚡ Енергія: ${Math.max(0, Math.floor(player.energy))}%`, 20, 40);
+            ctx.fillText(`⭐ Рахунок: ${player.score}`, 20, 70);
+
+            update();
+            requestAnimationFrame(draw);
+        }
+        draw();
+    </script>
+</body>
+</html>
