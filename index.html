@@ -5,39 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Мікробик 4-А</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; position: fixed; font-family: sans-serif; }
-        canvas { display: block; background: #f0f8ff; }
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; background: #f0f8ff; 
+            position: fixed; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            touch-action: none;
+        }
+        canvas { display: block; }
+        
         #joy-bg { 
             position: absolute; bottom: 50px; left: 50px; 
             width: 100px; height: 100px; background: rgba(0,0,0,0.1); 
             border-radius: 50%; border: 2px solid rgba(0,0,0,0.2);
-            touch-action: none; z-index: 10;
+            touch-action: none; z-index: 100; display: none;
         }
         #joy-stick { 
             position: absolute; top: 25px; left: 25px; 
             width: 50px; height: 50px; background: #00c800; 
             border-radius: 50%; border: 3px solid white; pointer-events: none;
         }
-        /* Стилі для кнопок меню, як на картинці */
+
         .menu-button {
             position: absolute; left: 50%; transform: translateX(-50%);
-            width: 80%; max-width: 300px; padding: 15px;
+            width: 85%; max-width: 300px; padding: 12px;
             text-align: center; color: white; font-weight: bold;
-            border-radius: 10px; cursor: pointer;
+            border-radius: 12px; cursor: pointer;
             box-shadow: 0 4px 0 rgba(0,0,0,0.2);
-            pointer-events: auto; /* Робимо кнопки клікабельними */
+            z-index: 50;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
     <canvas id="game"></canvas>
     
-    <!-- Кнопки меню як на картинці -->
-    <div id="start-button" class="menu-button" style="background: #4CAF50; bottom: 50px;">ТОРКНИСЬ ДЛЯ СТАРТУ</div>
-    <div class="menu-button" style="background: #FF69B4; top: 50%; margin-top: -100px;">🤝 Заводь друзів</div>
-    <div class="menu-button" style="background: #00BFFF; top: 50%; margin-top: -50px;">📚 Читай книги</div>
-    <div class="menu-button" style="background: #FFA500; top: 50%; margin-top: 0px;">⚡ Збирай їжу</div>
-    <div class="menu-button" style="background: #FF4500; top: 50%; margin-top: 50px;">⚠️ Уникай вірусів</div>
+    <!-- Інструкції -->
+    <div class="menu-button info" style="background: #FF69B4; top: 20%;">🤝 Заводь друзів</div>
+    <div class="menu-button info" style="background: #00BFFF; top: 30%;">📚 Читай книги</div>
+    <div class="menu-button info" style="background: #FFA500; top: 40%;">⚡ Збирай їжу</div>
+    <div class="menu-button info" style="background: #FF4500; top: 50%;">⚠️ Уникай вірусів</div>
+    
+    <!-- Кнопка старту -->
+    <div id="start-button" class="menu-button" style="background: #4CAF50; bottom: 80px; font-size: 22px; padding: 20px;">ГРАТИ! 🦠</div>
+
     <div id="joy-bg"><div id="joy-stick"></div></div>
 
     <script>
@@ -46,7 +56,7 @@
         const joyBg = document.getElementById('joy-bg');
         const joyStick = document.getElementById('joy-stick');
         const startButton = document.getElementById('start-button');
-        const menuButtons = document.querySelectorAll('.menu-button');
+        const infoButtons = document.querySelectorAll('.menu-button');
 
         let width, height;
         function resize() {
@@ -56,152 +66,161 @@
         window.addEventListener('resize', resize);
         resize();
 
-        const player = { x: width/2, y: height/2, size: 20, vx: 0, vy: 0, energy: 100, score: 0, books: 0, friends: 0 };
-        const items = [];
-        const foodColor = "#ffa500"; const bookColor = "#00BFFF"; const friendColor = "#FF69B4"; const virusColor = "#FF4500";
+        const player = { x: 0, y: 0, size: 22, vx: 0, vy: 0, energy: 100, score: 0, books: 0, friends: 0 };
+        player.x = width/2; player.y = height/2;
 
+        let items = [];
+        const foodColor = "#ffa500", bookColor = "#00BFFF", friendColor = "#FF69B4", virusColor = "#FF4500";
+
+        // КЕРУВАННЯ
         const maxDist = 40;
+        let activeTouch = false;
+
         function handleMove(e) {
+            if (!activeTouch && e.type !== 'mousemove') return;
             e.preventDefault();
-            const touch = e.touches ? e.touches : e;
+            
+            // Визначаємо координати (тач або мишка)
+            const input = e.touches ? e.touches[0] : e;
             const rect = joyBg.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
-            let dx = touch.clientX - centerX; let dy = touch.clientY - centerY;
+
+            let dx = input.clientX - centerX;
+            let dy = input.clientY - centerY;
             const dist = Math.sqrt(dx*dx + dy*dy);
-            if (dist > maxDist) { dx *= maxDist / dist; dy *= maxDist / dist; }
+
+            if (dist > maxDist) {
+                dx *= maxDist / dist;
+                dy *= maxDist / dist;
+            }
+
             joyStick.style.transform = `translate(${dx}px, ${dy}px)`;
-            player.vx = dx / 8; player.vy = dy / 8;
+            player.vx = dx / 7; // Швидкість
+            player.vy = dy / 7;
         }
-        joyBg.addEventListener('touchstart', handleMove);
+
+        joyBg.addEventListener('touchstart', (e) => { activeTouch = true; handleMove(e); });
         joyBg.addEventListener('touchmove', handleMove);
-        joyBg.addEventListener('touchend', () => { joyStick.style.transform = `translate(0px, 0px)`; player.vx = 0; player.vy = 0; });
+        window.addEventListener('touchend', () => { 
+            activeTouch = false;
+            joyStick.style.transform = `translate(0px, 0px)`; 
+            player.vx = 0; player.vy = 0; 
+        });
 
+        // Стан гри
+        let gameState = "menu";
 
-        let gameState = "menu"; // Додано стан "menu"
-
-        // Обробник кнопки старту
         startButton.addEventListener('click', () => {
             gameState = "playing";
-            // Приховуємо всі кнопки меню і показуємо джойстик при старті гри
-            menuButtons.forEach(button => button.style.display = 'none');
-            joyBg.style.display = 'block'; 
+            infoButtons.forEach(b => b.style.display = 'none');
+            joyBg.style.display = 'block';
+            player.energy = 100;
         });
-        
-        // Приховуємо джойстик за замовчуванням у меню
-        joyBg.style.display = 'none';
 
         function spawn() {
-            if (items.filter(item => item.type === 'food').length < 5) {
-                items.push({ type: 'food', x: Math.random() * (width-40) + 20, y: Math.random() * (height-40) + 20, size: 12, color: foodColor });
-            }
-            if (items.filter(item => item.type === 'book').length < 3) {
-                items.push({ type: 'book', x: Math.random() * (width-40) + 20, y: Math.random() * (height-40) + 20, size: 10, color: bookColor });
-            }
-            if (items.filter(item => item.type === 'friend').length < 2) {
-                items.push({ type: 'friend', x: Math.random() * (width-40) + 20, y: Math.random() * (height-40) + 20, size: 15, color: friendColor });
-            }
-            if (items.filter(item => item.type === 'virus').length < 4) {
-                items.push({ type: 'virus', x: Math.random() * (width-40) + 20, y: Math.random() * (height-40) + 20, size: 25, color: virusColor, vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2 });
-            }
+            if (items.filter(i => i.type === 'food').length < 5) 
+                items.push({ type: 'food', x: Math.random() * (width-40)+20, y: Math.random() * (height-40)+20, size: 12, color: foodColor });
+            if (items.filter(i => i.type === 'book').length < 3) 
+                items.push({ type: 'book', x: Math.random() * (width-40)+20, y: Math.random() * (height-40)+20, size: 10, color: bookColor });
+            if (items.filter(i => i.type === 'friend').length < 2) 
+                items.push({ type: 'friend', x: Math.random() * (width-40)+20, y: Math.random() * (height-40)+20, size: 15, color: friendColor });
+            if (items.filter(i => i.type === 'virus').length < 3) 
+                items.push({ type: 'virus', x: Math.random() * (width-40)+20, y: Math.random() * (height-40)+20, size: 20, color: virusColor, vx: (Math.random()-0.5)*3, vy: (Math.random()-0.5)*3 });
         }
 
         function update() {
-            if (gameState !== "playing") return; // Оновлюємо тільки в режимі гри
+            if (gameState !== "playing") return;
 
-            player.x += player.vx; player.y += player.vy;
+            player.x += player.vx;
+            player.y += player.vy;
+
+            // Кордони
             if (player.x < player.size) player.x = player.size;
             if (player.x > width - player.size) player.x = width - player.size;
             if (player.y < player.size) player.y = player.size;
             if (player.y > height - player.size) player.y = height - player.size;
-            player.energy -= 0.05;
 
-            items.forEach(item => {
+            player.energy -= 0.06;
+
+            items.forEach((item, index) => {
                 if (item.type === 'virus') {
                     item.x += item.vx; item.y += item.vy;
                     if (item.x < item.size || item.x > width - item.size) item.vx *= -1;
                     if (item.y < item.size || item.y > height - item.size) item.vy *= -1;
                 }
-            });
 
-            items.forEach((item, index) => {
                 const d = Math.hypot(player.x - item.x, player.y - item.y);
                 if (d < player.size + item.size) {
-                    if (item.type === 'food') { player.energy = Math.min(100, player.energy + 10); player.score += 10; items.splice(index, 1); } 
-                    else if (item.type === 'book') { player.books += 1; items.splice(index, 1); } 
-                    else if (item.type === 'friend') { player.friends += 1; items.splice(index, 1); } 
-                    else if (item.type === 'virus') {
-                        player.energy -= 50; 
-                        items.splice(index, 1);
-                    }
+                    if (item.type === 'food') { player.energy = Math.min(100, player.energy + 15); player.score += 10; }
+                    else if (item.type === 'book') { player.books += 1; player.score += 20; }
+                    else if (item.type === 'friend') { player.friends += 1; player.score += 30; }
+                    else if (item.type === 'virus') { player.energy -= 30; }
+                    items.splice(index, 1);
                 }
             });
 
             if (player.energy <= 0) {
-                alert(`Гра закінчена! Рахунок: ${player.score}, Книг: ${player.books}, Друзів: ${player.friends}`);
-                Object.assign(player, { x: width/2, y: height/2, energy: 100, score: 0, books: 0, friends: 0 });
-                items.length = 0; 
-                gameState = "menu"; // Повертаємося в меню
-                menuButtons.forEach(button => button.style.display = 'block'); // Показуємо кнопки меню
-                joyBg.style.display = 'none'; // Приховуємо джойстик
+                alert(`Гру закінчено! Рахунок: ${player.score}`);
+                gameState = "menu";
+                items = [];
+                player.x = width/2; player.y = height/2;
+                player.score = 0; player.books = 0; player.friends = 0;
+                infoButtons.forEach(b => b.style.display = 'block');
+                joyBg.style.display = 'none';
             }
             spawn();
         }
 
-        function drawMenu() {
-            ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = "#333";
-            ctx.font = "bold 30px sans-serif";
-            ctx.textAlign = 'center';
-            ctx.fillText("Мікробик 4-А класу", width/2, height/2 - 180);
-
-            // Малюємо мікробика в меню
-            ctx.fillStyle = "#00c800";
-            ctx.beginPath();
-            ctx.arc(width/2, height/2 - 100, player.size * 1.5, 0, Math.PI*2);
-            ctx.fill();
-            ctx.fillStyle = "white";
-            ctx.beginPath(); ctx.arc(width/2 - 10, height/2 - 110, 5, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(width/2 + 10, height/2 - 110, 5, 0, Math.PI*2); ctx.fill();
-            
-             ctx.font = "bold 20px sans-serif";
-             ctx.fillText("Ти учень 4-А класу!", width/2, height/2 - 20);
-        }
-
-        function drawGame() {
-            ctx.clearRect(0, 0, width, height);
-            items.forEach(item => {
-                ctx.fillStyle = item.color;
-                ctx.beginPath();
-                ctx.arc(item.x, item.y, item.size, 0, Math.PI*2);
-                ctx.fill();
-            });
-
-            const pulse = 1 + Math.sin(Date.now() * 0.01) * 0.05;
-            ctx.fillStyle = `hsl(${player.energy * 1.2}, 70%, 45%)`;
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.size * pulse, 0, Math.PI*2);
-            ctx.fill();
-            ctx.fillStyle = "white";
-            ctx.beginPath(); ctx.arc(player.x-7, player.y-5, 5, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(player.x+7, player.y-5, 5, 0, Math.PI*2); ctx.fill();
-
-            ctx.fillStyle = "#333";
-            ctx.font = "bold 18px sans-serif";
-            ctx.textAlign = 'left';
-            ctx.fillText(`⚡ Енергія: ${Math.max(0, Math.floor(player.energy))}%`, 20, 40);
-            ctx.fillText(`⭐ Рахунок: ${player.score}`, 20, 70);
-            ctx.fillText(`📚 Книги: ${player.books}`, 20, 100);
-            ctx.fillText(`🤝 Друзі: ${player.friends}`, 20, 130);
-        }
-
         function draw() {
+            ctx.clearRect(0, 0, width, height);
+
             if (gameState === "menu") {
-                drawMenu();
-            } else if (gameState === "playing") {
-                drawGame();
-                update();
+                ctx.fillStyle = "#333";
+                ctx.font = "bold 28px sans-serif";
+                ctx.textAlign = 'center';
+                ctx.fillText("🦠 Мікробик 4-А", width/2, 100);
+            } else {
+                // Малюємо предмети
+                items.forEach(item => {
+                    ctx.fillStyle = item.color;
+                    ctx.beginPath();
+                    ctx.arc(item.x, item.y, item.size, 0, Math.PI*2);
+                    ctx.fill();
+                    if(item.type === 'virus') { // Шипи вірусу
+                        ctx.strokeStyle = item.color; ctx.lineWidth = 3;
+                        for(let a=0; a<Math.PI*2; a+=Math.PI/4) {
+                            ctx.moveTo(item.x, item.y);
+                            ctx.lineTo(item.x+Math.cos(a)*30, item.y+Math.sin(a)*30);
+                        }
+                        ctx.stroke();
+                    }
+                });
+
+                // Малюємо гравця
+                ctx.fillStyle = player.energy > 30 ? "#00c800" : "#ff4500";
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.size, 0, Math.PI*2);
+                ctx.fill();
+                // Очі
+                ctx.fillStyle = "white";
+                ctx.beginPath(); ctx.arc(player.x-7, player.y-5, 5, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(player.x+7, player.y-5, 5, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "black";
+                ctx.beginPath(); ctx.arc(player.x-7, player.y-5, 2, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(player.x+7, player.y-5, 2, 0, Math.PI*2); ctx.fill();
+
+                // HUD
+                ctx.fillStyle = "#333";
+                ctx.font = "bold 16px sans-serif";
+                ctx.textAlign = 'left';
+                ctx.fillText(`⚡ Енергія: ${Math.max(0, Math.floor(player.energy))}%`, 20, 40);
+                ctx.fillText(`⭐ Рахунок: ${player.score}`, 20, 65);
+                ctx.fillText(`📚 Книги: ${player.books}`, 20, 90);
+                ctx.fillText(`👥 Друзі: ${player.friends}`, 20, 115);
             }
+
+            update();
             requestAnimationFrame(draw);
         }
         draw();
