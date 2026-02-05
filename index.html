@@ -18,21 +18,21 @@
             width: 50px; height: 50px; background: #00c800; 
             border-radius: 50%; border: 3px solid white; pointer-events: none;
         }
-        /* Стили для кнопок меню, как на картинке */
+        /* Стилі для кнопок меню, як на картинці */
         .menu-button {
             position: absolute; left: 50%; transform: translateX(-50%);
             width: 80%; max-width: 300px; padding: 15px;
             text-align: center; color: white; font-weight: bold;
             border-radius: 10px; cursor: pointer;
             box-shadow: 0 4px 0 rgba(0,0,0,0.2);
-            pointer-events: auto; /* Делаем кнопки кликабельными */
+            pointer-events: auto; /* Робимо кнопки клікабельними */
         }
     </style>
 </head>
 <body>
     <canvas id="game"></canvas>
     
-    <!-- Кнопки меню как на картинке -->
+    <!-- Кнопки меню як на картинці -->
     <div id="start-button" class="menu-button" style="background: #4CAF50; bottom: 50px;">ТОРКНИСЬ ДЛЯ СТАРТУ</div>
     <div class="menu-button" style="background: #FF69B4; top: 50%; margin-top: -100px;">🤝 Заводь друзів</div>
     <div class="menu-button" style="background: #00BFFF; top: 50%; margin-top: -50px;">📚 Читай книги</div>
@@ -78,17 +78,17 @@
         joyBg.addEventListener('touchend', () => { joyStick.style.transform = `translate(0px, 0px)`; player.vx = 0; player.vy = 0; });
 
 
-        let gameState = "menu"; // Добавлено состояние "menu"
+        let gameState = "menu"; // Додано стан "menu"
 
-        // Обработчик кнопки старта
+        // Обробник кнопки старту
         startButton.addEventListener('click', () => {
             gameState = "playing";
-            // Скрыть все кнопки меню и джойстик при старте игры
+            // Приховуємо всі кнопки меню і показуємо джойстик при старті гри
             menuButtons.forEach(button => button.style.display = 'none');
             joyBg.style.display = 'block'; 
         });
         
-        // Скрыть джойстик по умолчанию в меню
+        // Приховуємо джойстик за замовчуванням у меню
         joyBg.style.display = 'none';
 
         function spawn() {
@@ -107,7 +107,7 @@
         }
 
         function update() {
-            if (gameState !== "playing") return; // Обновляем только в режиме игры
+            if (gameState !== "playing") return; // Оновлюємо тільки в режимі гри
 
             player.x += player.vx; player.y += player.vy;
             if (player.x < player.size) player.x = player.size;
@@ -141,9 +141,9 @@
                 alert(`Гра закінчена! Рахунок: ${player.score}, Книг: ${player.books}, Друзів: ${player.friends}`);
                 Object.assign(player, { x: width/2, y: height/2, energy: 100, score: 0, books: 0, friends: 0 });
                 items.length = 0; 
-                gameState = "menu"; // Возвращаемся в меню
-                menuButtons.forEach(button => button.style.display = 'block'); // Показываем кнопки меню
-                joyBg.style.display = 'none'; // Скрываем джойстик
+                gameState = "menu"; // Повертаємося в меню
+                menuButtons.forEach(button => button.style.display = 'block'); // Показуємо кнопки меню
+                joyBg.style.display = 'none'; // Приховуємо джойстик
             }
             spawn();
         }
@@ -155,7 +155,7 @@
             ctx.textAlign = 'center';
             ctx.fillText("Мікробик 4-А класу", width/2, height/2 - 180);
 
-            // Рисуем микробика в меню
+            // Малюємо мікробика в меню
             ctx.fillStyle = "#00c800";
             ctx.beginPath();
             ctx.arc(width/2, height/2 - 100, player.size * 1.5, 0, Math.PI*2);
